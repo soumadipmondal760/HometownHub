@@ -1,2 +1,151 @@
 # HometownHub
 CommunitiNews is your go-to platform for staying connected with the heartbeat of your local area. Empowering individuals to become citizen journalists, CommunitiNews allows users to share and discover news stories, events, and updates from their neighborhoods. 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bamanghata News</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Bamanghata News</h1>
+    </header>
+
+    <main>
+        <section id="news-form">
+            <h2>Submit News</h2>
+            <form id="newsForm">
+                <label for="title">Title:</label>
+                <input type="text" id="title" required>
+                <label for="content">Content:</label>
+                <textarea id="content" required></textarea>
+                <label for="author">Author:</label>
+                <input type="text" id="author" required>
+                <button type="button" onclick="submitNews()">Submit News</button>
+            </form>
+        </section>
+
+        <section id="news-list">
+            <h2>Latest News</h2>
+            <div id="newsList"></div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #4CAF50;
+    color: white;
+    text-align: center;
+    padding: 20px;
+}
+
+main {
+    max-width: 800px;
+    margin: 20px auto;
+    padding: 20px;
+}
+
+#news-form,
+#news-list {
+    margin-bottom: 40px;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input,
+textarea {
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #45a049;
+}
+
+#news-list h2 {
+    border-bottom: 2px solid #4CAF50;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+#newsList h3 {
+    color: #4CAF50;
+}
+document.addEventListener('DOMContentLoaded', function () {
+    fetchNews();
+
+    document.getElementById('newsForm').addEventListener('submit', function (event) {
+        event.preventDefault();
+        submitNews();
+    });
+});
+
+function fetchNews() {
+    fetch('/api/news')
+        .then(response => response.json())
+        .then(news => displayNews(news))
+        .catch(error => console.error('Error fetching news:', error));
+}
+
+function displayNews(news) {
+    const newsList = document.getElementById('newsList');
+    newsList.innerHTML = '';
+
+    news.forEach(item => {
+        const newsItem = document.createElement('div');
+        newsItem.innerHTML = `
+            <h3>${item.title}</h3>
+            <p>${item.content}</p>
+            <p><strong>Author:</strong> ${item.author}</p>
+            <hr>
+        `;
+        newsList.appendChild(newsItem);
+    });
+}
+
+function submitNews() {
+    const title = document.getElementById('title').value;
+    const content = document.getElementById('content').value;
+    const author = document.getElementById('author').value;
+
+    fetch('/api/news', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, content, author }),
+    })
+        .then(response => response.json())
+        .then(newNews => {
+            fetchNews();
+            document.getElementById('title').value = '';
+            document.getElementById('content').value = '';
+            document.getElementById('author').value = '';
+        })
+        .catch(error => console.error('Error submitting news:', error));
+}
